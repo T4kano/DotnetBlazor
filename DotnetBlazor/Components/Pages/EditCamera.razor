@@ -1,0 +1,21 @@
+﻿@inject ICameraRepository Repository
+@inject NavigationManager Navigation
+@page "/cameras/editar/{id:int}"
+
+<PageTitle>Editar Câmera</PageTitle>
+
+<h3>Editar Câmera @Id</h3>
+
+<CameraForm IsEditMode="true" CameraId="@Id" OnValidCameraSubmit="HandleSubmit" />
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private async Task HandleSubmit(Camera camera)
+    {
+        await Repository.UpdateAsync(camera);
+        Navigation.NavigateTo("/cameras");
+    }
+}

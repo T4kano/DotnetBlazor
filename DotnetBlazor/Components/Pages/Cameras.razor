@@ -1,0 +1,63 @@
+﻿@inject ICameraRepository Repository
+@page "/cameras"
+
+<PageTitle>Câmeras</PageTitle>
+
+<div class="d-flex justify-content-between mb-3">
+    <h3>Câmeras</h3>
+    <a href="cameras/nova" class="btn btn-primary">Adicionar Nova</a>
+</div>
+
+@if (cameras is null)
+{
+    <div class="card">
+        Carregando...
+    </div>
+}
+else if (cameras.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Descrição</th>
+                <th>Marca</th>
+                <th>IP</th>
+                <th>Coordenadas</th>
+                <th>#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var camera in cameras)
+            {
+                <tr>
+                    <td>@camera.Id</td>
+                    <td>@camera.Description</td>
+                    <td>@camera.Brand</td>
+                    <td>@camera.Ip</td>
+                    <td>@camera.Coordinates</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="@($"cameras/editar/{camera.Id}")">
+                            <i class="bi bi-pen-fill" />
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="card">
+        Sem dados...
+    </div>
+}
+
+@code {
+    private IEnumerable<Camera>? cameras;
+
+    protected override async Task OnInitializedAsync()
+    {
+        cameras = await Repository.GetAllAsync();
+    }
+}

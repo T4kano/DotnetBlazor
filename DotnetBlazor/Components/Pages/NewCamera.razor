@@ -1,0 +1,17 @@
+﻿@inject ICameraRepository Repository
+@inject NavigationManager Navigation
+@page "/cameras/nova"
+
+<PageTitle>Nova Câmera</PageTitle>
+
+<h3>Nova Câmera</h3>
+
+<CameraForm IsEditMode="false" OnValidCameraSubmit="HandleSubmit" />
+
+@code {
+    private async Task HandleSubmit(Camera camera)
+    {
+        await Repository.AddAsync(camera);
+        Navigation.NavigateTo("/cameras");
+    }
+}

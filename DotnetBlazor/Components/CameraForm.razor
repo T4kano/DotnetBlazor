@@ -1,0 +1,103 @@
+﻿@inject ICameraRepository Repository
+@inject NavigationManager Navigation
+
+@if (Camera is not null)
+{
+    <EditForm Enhance="true" method="post" FormName="AddOrEditForm" OnValidSubmit="HandleSubmit" Model="Camera" autocomplete="off">
+
+        @if (IsEditMode)
+        {
+            <input type="hidden" name="Camera.Id" value="@Camera.Id" />
+        }
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Descrição</label>
+            <InputText id="description" @bind-Value="Camera.Description" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label for="brand" class="form-label">Marca</label>
+            <InputText id="brand" @bind-Value="Camera.Brand" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label for="ip" class="form-label">IP</label>
+            <InputText id="ip" @bind-Value="Camera.Ip" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label for="cordinates" class="form-label">Coordenadas</label>
+            <InputText id="cordinates" @bind-Value="Camera.Coordinates" class="form-control" />
+        </div>
+
+        <div class="d-flex">
+            <a href="/cameras" class="btn btn-primary">Voltar</a>
+
+            @if (IsEditMode)
+            {
+                <button class="btn btn-danger ms-3" @onclick="OpenConfirmDialog" type="button">
+                    Deletar
+                </button>
+            }
+
+            <button class="btn btn-success ms-auto" type="submit">Salvar</button>
+        </div>
+
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+    </EditForm>
+
+    
+
+    <Dialog Show="showConfirmDialog" OnClose="CancelDelete" OnConfirm="DeleteCamera" />
+}
+
+@code {
+    private bool showConfirmDialog;
+
+    [Parameter]
+    public bool IsEditMode { get; set; } = false;
+
+    [Parameter]
+    public int CameraId { get; set; }
+
+    [Parameter]
+    public EventCallback<Camera> OnValidCameraSubmit { get; set; }
+
+    [SupplyParameterFromForm]
+    public Camera? Camera { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEditMode)
+        {
+            Camera ??= await Repository.GetByIdAsync(CameraId);
+        }
+        else
+        {
+            Camera ??= new();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        await OnValidCameraSubmit.InvokeAsync(Camera);
+    }
+
+    private void OpenConfirmDialog()
+    {
+        showConfirmDialog = true;
+    }
+
+    private void CancelDelete()
+    {
+        showConfirmDialog = false;
+    }
+
+    private async Task DeleteCamera()
+    {
+        await Repository.DeleteAsync(CameraId);
+        showConfirmDialog = false;
+        Navigation.NavigateTo("/cameras");
+    }
+}

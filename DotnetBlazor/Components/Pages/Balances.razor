@@ -1,0 +1,59 @@
+﻿@inject IBalanceRepository Repository
+@page "/balancas"
+
+<PageTitle>Balanças</PageTitle>
+
+<div class="d-flex justify-content-between mb-3">
+    <h3>Balanças</h3>
+    <a href="balancas/nova" class="btn btn-primary">Adicionar Nova</a>
+</div>
+
+@if (balances is null)
+{
+    <div class="card">
+        Carregando...
+    </div>
+}
+else if (balances.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Coordenadas</th>
+                <th>#</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var balance in balances)
+            {
+                <tr>
+                    <td>@balance.Id</td>
+                    <td>@balance.Name</td>
+                    <td>@balance.Coordinates</td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="@($"balance/editar/{balance.Id}")">
+                            <i class="bi bi-pen-fill" />
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="card">
+        Sem dados...
+    </div>
+}
+
+@code {
+    private IEnumerable<Balance>? balances;
+
+    protected override async Task OnInitializedAsync()
+    {
+        balances = await Repository.GetAllAsync();
+    }
+}

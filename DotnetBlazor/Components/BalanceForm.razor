@@ -1,0 +1,110 @@
+﻿@inject IValidator<Balance> BalanceValidator
+@inject IBalanceRepository BalanceRepository
+@inject ICameraRepository CameraRepository
+@inject NavigationManager Navigation
+
+@if (Balance is not null)
+{
+    <EditForm Enhance="true" method="post" FormName="AddOrEditForm" OnValidSubmit="HandleSubmit" Model="Balance" autocomplete="off">
+
+    @if (IsEditMode)
+    {
+        <input type="hidden" name="Balance.Id" value="@Balance.Id" />
+    }
+
+    <div class="mb-3">
+        <label for="name" class="form-label">Nome</label>
+        <InputText id="name" @bind-Value="Balance.Name" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="coordinates" class="form-label">Coordenadas</label>
+        <InputText id="coordinates" @bind-Value="Balance.Coordinates" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label for="cameras" class="form-label">Selecione as Câmeras</label>
+        @if (Cameras != null && Cameras.Any())
+        {
+            @foreach (var camera in Cameras)
+            {
+                <div>
+                    <input type="checkbox" value="@camera.Id" @onchange="e => ToggleCameraSelection(camera, e.Value)">
+                    <label>@camera.Description</label>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a href="/balancass" class="btn btn-secondary">Voltar</a>
+        <button type="submit" class="btn btn-success">Salvar</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger">@ErrorMessage</div>
+    }
+
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+</EditForm>
+}
+
+@code {
+
+    [Parameter]
+    public bool IsEditMode { get; set; } = false;
+
+    [Parameter]
+    public int BalanceId { get; set; }
+
+    [Parameter]
+    public EventCallback<Balance> OnValidBalanceSubmit { get; set; }
+
+    private Balance Balance { get; set; } = new();
+
+    private List<Camera> Cameras { get; set; } = new();
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Cameras = (await CameraRepository.GetAllAsync()).ToList();
+
+        if (IsEditMode)
+        {
+            Balance ??= await BalanceRepository.GetByIdAsync(BalanceId) ?? new();
+        } else
+        {
+            Balance ??= new();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        ErrorMessage = string.Empty;
+
+        var validationResult = await BalanceValidator.ValidateAsync(Balance);
+
+        if (!validationResult.IsValid)
+        {
+            ErrorMessage = string.Join("<br/>", validationResult.Errors.Select(e => e.ErrorMessage));
+            return;
+        }
+
+        // await OnValidBalanceSubmit.InvokeAsync(Balance);
+    }
+
+    private void ToggleCameraSelection(Camera camera, object isChecked)
+    {
+        if ((bool)isChecked)
+        {
+            Balance.Cameras ??= new List<Camera>();
+            Balance.Cameras.Add(camera);
+        }
+        else
+        {
+            Balance?.Cameras?.Remove(camera);
+        }
+    }
+}
