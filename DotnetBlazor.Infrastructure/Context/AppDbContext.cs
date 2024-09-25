@@ -11,22 +11,16 @@ namespace DotnetBlazor.Infrastructure.Context
         }
 
         public DbSet<Camera> Cameras { get; set; }
-
         public DbSet<Balance> Balances { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Camera>()
+                .HasMany(b => b.Balances)
+                .WithMany(c => c.Cameras)
+                .UsingEntity(j => j.ToTable("CameraBalances"));
 
-            // Configurando relacionamento Many-to-Many entre Balance e Camera
-            modelBuilder.Entity<Balance>()
-                .HasMany(b => b.Cameras)
-                .WithMany(c => c.Balances)
-                .UsingEntity<Dictionary<string, object>>(
-                    "BalanceCamera",
-                    j => j.HasOne<Camera>().WithMany().HasForeignKey("CameraId"),
-                    j => j.HasOne<Balance>().WithMany().HasForeignKey("BalanceId")
-                );
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

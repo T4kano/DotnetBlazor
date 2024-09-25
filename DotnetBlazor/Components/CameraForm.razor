@@ -3,7 +3,7 @@
 
 @if (Camera is not null)
 {
-    <EditForm Enhance="true" method="post" FormName="AddOrEditForm" OnValidSubmit="HandleSubmit" Model="Camera" autocomplete="off">
+    <EditForm Enhance="true" FormName="AddOrEditForm" OnValidSubmit="HandleSubmit" Model="Camera" autocomplete="off">
 
         @if (IsEditMode)
         {
@@ -13,21 +13,25 @@
         <div class="mb-3">
             <label for="description" class="form-label">Descrição</label>
             <InputText id="description" @bind-Value="Camera.Description" class="form-control" />
+            <ValidationMessage For="@(() => Camera.Description)" />
         </div>
 
         <div class="mb-3">
             <label for="brand" class="form-label">Marca</label>
             <InputText id="brand" @bind-Value="Camera.Brand" class="form-control" />
+            <ValidationMessage For="@(() => Camera.Brand)" />
         </div>
 
         <div class="mb-3">
             <label for="ip" class="form-label">IP</label>
             <InputText id="ip" @bind-Value="Camera.Ip" class="form-control" />
+            <ValidationMessage For="@(() => Camera.Ip)" />
         </div>
 
         <div class="mb-3">
             <label for="cordinates" class="form-label">Coordenadas</label>
             <InputText id="cordinates" @bind-Value="Camera.Coordinates" class="form-control" />
+            <ValidationMessage For="@(() => Camera.Coordinates)" />
         </div>
 
         <div class="d-flex">
@@ -43,18 +47,14 @@
             <button class="btn btn-success ms-auto" type="submit">Salvar</button>
         </div>
 
-        <DataAnnotationsValidator />
+        <FluentValidationValidator />
         <ValidationSummary />
     </EditForm>
 
-    
-
-    <Dialog Show="showConfirmDialog" OnClose="CancelDelete" OnConfirm="DeleteCamera" />
+    <CameraDialog Show="showConfirmDialog" OnClose="CancelDelete" OnConfirm="DeleteCamera" />
 }
 
 @code {
-    private bool showConfirmDialog;
-
     [Parameter]
     public bool IsEditMode { get; set; } = false;
 
@@ -64,7 +64,8 @@
     [Parameter]
     public EventCallback<Camera> OnValidCameraSubmit { get; set; }
 
-    [SupplyParameterFromForm]
+
+    private bool showConfirmDialog;
     public Camera? Camera { get; set; }
 
     protected override async Task OnInitializedAsync()

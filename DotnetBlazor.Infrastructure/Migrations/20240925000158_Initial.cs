@@ -41,40 +41,40 @@ namespace DotnetBlazor.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "BalanceCamera",
+                name: "CameraBalances",
                 columns: table => new
                 {
-                    BalanceId = table.Column<int>(type: "INTEGER", nullable: false),
-                    CameraId = table.Column<int>(type: "INTEGER", nullable: false)
+                    BalancesId = table.Column<int>(type: "INTEGER", nullable: false),
+                    CamerasId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BalanceCamera", x => new { x.BalanceId, x.CameraId });
+                    table.PrimaryKey("PK_CameraBalances", x => new { x.BalancesId, x.CamerasId });
                     table.ForeignKey(
-                        name: "FK_BalanceCamera_Balances_BalanceId",
-                        column: x => x.BalanceId,
+                        name: "FK_CameraBalances_Balances_BalancesId",
+                        column: x => x.BalancesId,
                         principalTable: "Balances",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_BalanceCamera_Cameras_CameraId",
-                        column: x => x.CameraId,
+                        name: "FK_CameraBalances_Cameras_CamerasId",
+                        column: x => x.CamerasId,
                         principalTable: "Cameras",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_BalanceCamera_CameraId",
-                table: "BalanceCamera",
-                column: "CameraId");
+                name: "IX_CameraBalances_CamerasId",
+                table: "CameraBalances",
+                column: "CamerasId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "BalanceCamera");
+                name: "CameraBalances");
 
             migrationBuilder.DropTable(
                 name: "Balances");

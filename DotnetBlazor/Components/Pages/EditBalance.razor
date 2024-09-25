@@ -1,0 +1,21 @@
+﻿@inject IBalanceRepository Repository
+@inject NavigationManager Navigation
+@page "/balancas/editar/{id:int}"
+
+<PageTitle>Editar Balança</PageTitle>
+
+<h3>Editar Balança @Id</h3>
+
+<BalanceForm IsEditMode="true" BalanceId="@Id" OnValidBalanceSubmit="HandleSubmit" />
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private async Task HandleSubmit(Balance balance)
+    {
+        await Repository.UpdateAsync(balance);
+        Navigation.NavigateTo("/balancas");
+    }
+}

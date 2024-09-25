@@ -37,20 +37,8 @@ namespace DotnetBlazor.Infrastructure.Repositories
         // Atualizar uma balança existente
         public async Task UpdateAsync(Balance balance)
         {
-            var existingBalance = await context.Balances.Include(b => b.Cameras)
-                                                         .FirstOrDefaultAsync(b => b.Id == balance.Id);
-
-            if (existingBalance != null)
-            {
-                // Atualiza as propriedades da balança
-                existingBalance.Name = balance.Name;
-                existingBalance.Coordinates = balance.Coordinates;
-
-                // Atualiza o relacionamento Many-to-Many com Câmeras
-                existingBalance.Cameras = balance.Cameras;
-
-                await context.SaveChangesAsync();
-            }
+            context.Balances.Update(balance);
+            await context.SaveChangesAsync();
         }
 
         // Remover uma balança pelo ID

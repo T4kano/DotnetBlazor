@@ -1,58 +1,72 @@
-﻿@inject IValidator<Balance> BalanceValidator
-@inject IBalanceRepository BalanceRepository
+﻿@inject IBalanceRepository BalanceRepository
 @inject ICameraRepository CameraRepository
 @inject NavigationManager Navigation
 
 @if (Balance is not null)
 {
-    <EditForm Enhance="true" method="post" FormName="AddOrEditForm" OnValidSubmit="HandleSubmit" Model="Balance" autocomplete="off">
+    <EditForm Enhance="true" FormName="AddOrEditForm" OnValidSubmit="SubmitValidForm" Model="Balance" autocomplete="off">
 
-    @if (IsEditMode)
-    {
-        <input type="hidden" name="Balance.Id" value="@Balance.Id" />
-    }
-
-    <div class="mb-3">
-        <label for="name" class="form-label">Nome</label>
-        <InputText id="name" @bind-Value="Balance.Name" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label for="coordinates" class="form-label">Coordenadas</label>
-        <InputText id="coordinates" @bind-Value="Balance.Coordinates" class="form-control" />
-    </div>
-
-    <div class="mb-3">
-        <label for="cameras" class="form-label">Selecione as Câmeras</label>
-        @if (Cameras != null && Cameras.Any())
+        @if (IsEditMode)
         {
-            @foreach (var camera in Cameras)
-            {
-                <div>
-                    <input type="checkbox" value="@camera.Id" @onchange="e => ToggleCameraSelection(camera, e.Value)">
-                    <label>@camera.Description</label>
-                </div>
-            }
+            <input type="hidden" name="Balance.Id" value="@Balance.Id" />
         }
-    </div>
 
-    <div class="d-flex justify-content-between">
-        <a href="/balancass" class="btn btn-secondary">Voltar</a>
-        <button type="submit" class="btn btn-success">Salvar</button>
-    </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">Nome</label>
+            <InputText id="name" @bind-Value="Balance.Name" class="form-control" />
+            <ValidationMessage For="@(() => Balance.Name)" />
+        </div>
 
-    @if (!string.IsNullOrEmpty(ErrorMessage))
-    {
-        <div class="alert alert-danger">@ErrorMessage</div>
-    }
+        <div class="mb-3">
+            <label for="coordinates" class="form-label">Coordenadas (latitude, longitude)</label>
+            <InputText id="coordinates" @bind-Value="Balance.Coordinates" class="form-control" />
+            <ValidationMessage For="@(() => Balance.Coordinates)" />
+        </div>
 
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-</EditForm>
+        
+        <div class="mb-3">
+            <label for="cameras" class="form-label">Selecione as Câmeras</label>
+            @if (Cameras != null && Cameras.Any())
+            {
+                @foreach (var camera in Cameras)
+                {
+                    <div>
+                        <input
+                            type="checkbox"
+                            value="@camera.Id"
+                            checked="@(CameraSelection[camera.Id])"
+                            @onchange="e => ToggleCameraSelection(camera, (bool)e.Value)"
+                        >
+                        <label>@camera.Description</label>
+                    </div>
+                }
+            }
+            <ValidationMessage For="@(() => Balance.Cameras)" />
+        </div>
+
+        <div class="d-flex">
+            <a href="/balancas" class="btn btn-secondary">Voltar</a>
+
+            @if (IsEditMode)
+            {
+                <button class="btn btn-danger ms-3"
+                    @onclick="OpenConfirmDialog" type="button"
+                    disabled="@(Balance.Cameras == null)">
+                    Deletar
+                </button>
+            }
+
+            <button type="submit" class="btn btn-success ms-auto">Salvar</button>
+        </div>
+
+        <FluentValidationValidator />
+        <ValidationSummary />
+    </EditForm>
+
+    <BalanceDialog Show="showConfirmDialog" OnClose="CancelDelete" OnConfirm="DeleteBalance" />
 }
 
 @code {
-
     [Parameter]
     public bool IsEditMode { get; set; } = false;
 
@@ -62,49 +76,96 @@
     [Parameter]
     public EventCallback<Balance> OnValidBalanceSubmit { get; set; }
 
-    private Balance Balance { get; set; } = new();
-
-    private List<Camera> Cameras { get; set; } = new();
-    private string ErrorMessage { get; set; } = string.Empty;
+    private bool showConfirmDialog;
+    public Balance? Balance { get; set; }
+    public List<Camera> Cameras { get; set; } = new();
+    private Dictionary<int, bool> CameraSelection { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
         Cameras = (await CameraRepository.GetAllAsync()).ToList();
 
+        foreach (var camera in Cameras)
+        {
+            CameraSelection[camera.Id] = false; // Inicializa como não selecionado
+        }
+
         if (IsEditMode)
         {
-            Balance ??= await BalanceRepository.GetByIdAsync(BalanceId) ?? new();
+            Balance ??= await BalanceRepository.GetByIdAsync(BalanceId);
+
+            if(Balance != null) 
+            {
+                foreach (var balanceCamera in Balance.Cameras)
+                {
+                    if (CameraSelection.ContainsKey(balanceCamera.Id))
+                    {
+                        CameraSelection[balanceCamera.Id] = true; // Marca como selecionada
+                    }
+                }
+            }
         } else
         {
             Balance ??= new();
         }
     }
 
-    private async Task HandleSubmit()
+    private async Task SubmitValidForm()
     {
-        ErrorMessage = string.Empty;
+        // Limpa a lista de câmeras em Balance
+        // Balance.Cameras.Clear();
 
-        var validationResult = await BalanceValidator.ValidateAsync(Balance);
+        // Adiciona as câmeras selecionadas
+        // foreach (var camera in Cameras)
+        // {
+        //     if (CameraSelection[camera.Id]) verifica se a câmera está selecionada
+        //     {
+        //         Balance.Cameras.Add(camera);
+        //     }
+        // }
 
-        if (!validationResult.IsValid)
-        {
-            ErrorMessage = string.Join("<br/>", validationResult.Errors.Select(e => e.ErrorMessage));
-            return;
-        }
-
-        // await OnValidBalanceSubmit.InvokeAsync(Balance);
+        await OnValidBalanceSubmit.InvokeAsync(Balance);
     }
 
     private void ToggleCameraSelection(Camera camera, object isChecked)
     {
+        // Inicializa a lista se ainda não estiver inicializada
+        // Balance ??= new();
+        // Balance.Cameras ??= new List<Camera>();
+
         if ((bool)isChecked)
         {
-            Balance.Cameras ??= new List<Camera>();
-            Balance.Cameras.Add(camera);
+            // Adiciona a câmera apenas se não estiver presente na lista
+            if (!Balance.Cameras.Any(c => c.Id == camera.Id))
+            {
+                Balance.Cameras.Add(camera);
+            }
         }
         else
         {
-            Balance?.Cameras?.Remove(camera);
+            // Remove a câmera da lista, se estiver presente
+            var existingCamera = Balance.Cameras.FirstOrDefault(c => c.Id == camera.Id);
+            if (existingCamera != null)
+            {
+                Balance.Cameras.Remove(existingCamera);
+            }
         }
+    }
+
+    private void OpenConfirmDialog()
+    {
+        showConfirmDialog = true;
+    }
+
+    private void CancelDelete()
+    {
+        showConfirmDialog = false;
+    }
+
+    private async Task DeleteBalance()
+    {
+        await BalanceRepository.DeleteAsync(BalanceId);
+        showConfirmDialog = false;
+        Navigation.NavigateTo("/balancas");
     }
 }

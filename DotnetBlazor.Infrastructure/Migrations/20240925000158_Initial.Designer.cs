@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DotnetBlazor.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240922173447_Initial")]
+    [Migration("20240925000158_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -21,17 +21,17 @@ namespace DotnetBlazor.Infrastructure.Migrations
 
             modelBuilder.Entity("BalanceCamera", b =>
                 {
-                    b.Property<int>("BalanceId")
+                    b.Property<int>("BalancesId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CameraId")
+                    b.Property<int>("CamerasId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("BalanceId", "CameraId");
+                    b.HasKey("BalancesId", "CamerasId");
 
-                    b.HasIndex("CameraId");
+                    b.HasIndex("CamerasId");
 
-                    b.ToTable("BalanceCamera");
+                    b.ToTable("CameraBalances", (string)null);
                 });
 
             modelBuilder.Entity("DotnetBlazor.Domain.Entities.Balance", b =>
@@ -86,13 +86,13 @@ namespace DotnetBlazor.Infrastructure.Migrations
                 {
                     b.HasOne("DotnetBlazor.Domain.Entities.Balance", null)
                         .WithMany()
-                        .HasForeignKey("BalanceId")
+                        .HasForeignKey("BalancesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DotnetBlazor.Domain.Entities.Camera", null)
                         .WithMany()
-                        .HasForeignKey("CameraId")
+                        .HasForeignKey("CamerasId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -22,6 +22,7 @@ else if (balances.Any())
                 <th>#</th>
                 <th>Nome</th>
                 <th>Coordenadas</th>
+                <th>Câmeras</th>
                 <th>#</th>
             </tr>
         </thead>
@@ -32,8 +33,9 @@ else if (balances.Any())
                     <td>@balance.Id</td>
                     <td>@balance.Name</td>
                     <td>@balance.Coordinates</td>
+                    <td>@balance.Cameras.Count()</td>
                     <td>
-                        <a class="btn btn-primary btn-sm" href="@($"balance/editar/{balance.Id}")">
+                        <a class="btn btn-primary btn-sm" href="@($"balancas/editar/{balance.Id}")">
                             <i class="bi bi-pen-fill" />
                         </a>
                     </td>
