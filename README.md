@@ -14,7 +14,7 @@ Este projeto é uma aplicação web desenvolvida com **Blazor** e **Entity Frame
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/t4kano/dotnetblazor.git
+   git clone https://github.com/t4kano/DotnetBlazor.git
    cd dotnetblazor
    ```
 
