@@ -23,20 +23,18 @@
             <ValidationMessage For="@(() => Balance.Coordinates)" />
         </div>
 
-        
+
         <div class="mb-3">
             <label for="cameras" class="form-label">Selecione as Câmeras</label>
-            @if (Cameras != null && Cameras.Any())
+            @if (CameraOptions != null && CameraOptions.Any())
             {
-                @foreach (var camera in Cameras)
+                @foreach (var camera in CameraOptions)
                 {
                     <div>
-                        <input
-                            type="checkbox"
-                            value="@camera.Id"
-                            checked="@(CameraSelection[camera.Id])"
-                            @onchange="e => ToggleCameraSelection(camera, (bool)e.Value)"
-                        >
+                        <input type="checkbox"
+                               value="@camera.Id"
+                               checked="@(CameraSelection[camera.Id])"
+                               @onchange="e => ToggleCameraSelection(camera, (bool)e.Value)">
                         <label>@camera.Description</label>
                     </div>
                 }
@@ -50,8 +48,8 @@
             @if (IsEditMode)
             {
                 <button class="btn btn-danger ms-3"
-                    @onclick="OpenConfirmDialog" type="button"
-                    disabled="@(Balance.Cameras == null)">
+                        @onclick="OpenConfirmDialog" type="button"
+                        disabled="@(Balance.Cameras == null)">
                     Deletar
                 </button>
             }
@@ -78,14 +76,14 @@
 
     private bool showConfirmDialog;
     public Balance? Balance { get; set; }
-    public List<Camera> Cameras { get; set; } = new();
+    public List<Camera> CameraOptions { get; set; } = new();
     private Dictionary<int, bool> CameraSelection { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
-        Cameras = (await CameraRepository.GetAllAsync()).ToList();
+        CameraOptions = (await CameraRepository.GetAllAsync()).ToList();
 
-        foreach (var camera in Cameras)
+        foreach (var camera in CameraOptions)
         {
             CameraSelection[camera.Id] = false; // Inicializa como não selecionado
         }
@@ -94,7 +92,7 @@
         {
             Balance ??= await BalanceRepository.GetByIdAsync(BalanceId);
 
-            if(Balance != null) 
+            if (Balance != null)
             {
                 foreach (var balanceCamera in Balance.Cameras)
                 {
@@ -104,7 +102,8 @@
                     }
                 }
             }
-        } else
+        }
+        else
         {
             Balance ??= new();
         }
@@ -112,39 +111,23 @@
 
     private async Task SubmitValidForm()
     {
-        // Limpa a lista de câmeras em Balance
-        // Balance.Cameras.Clear();
-
-        // Adiciona as câmeras selecionadas
-        // foreach (var camera in Cameras)
-        // {
-        //     if (CameraSelection[camera.Id]) verifica se a câmera está selecionada
-        //     {
-        //         Balance.Cameras.Add(camera);
-        //     }
-        // }
-
         await OnValidBalanceSubmit.InvokeAsync(Balance);
     }
 
-    private void ToggleCameraSelection(Camera camera, object isChecked)
+    private void ToggleCameraSelection(Camera cameraOption, object isChecked)
     {
-        // Inicializa a lista se ainda não estiver inicializada
-        // Balance ??= new();
-        // Balance.Cameras ??= new List<Camera>();
-
         if ((bool)isChecked)
         {
             // Adiciona a câmera apenas se não estiver presente na lista
-            if (!Balance.Cameras.Any(c => c.Id == camera.Id))
+            if (!Balance.Cameras.Any(c => c.Id == cameraOption.Id))
             {
-                Balance.Cameras.Add(camera);
+                Balance.Cameras.Add(cameraOption);
             }
         }
         else
         {
             // Remove a câmera da lista, se estiver presente
-            var existingCamera = Balance.Cameras.FirstOrDefault(c => c.Id == camera.Id);
+            var existingCamera = Balance.Cameras.FirstOrDefault(c => c.Id == cameraOption.Id);
             if (existingCamera != null)
             {
                 Balance.Cameras.Remove(existingCamera);
